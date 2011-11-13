@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import cmd
 import getpass
 import gsclient
@@ -78,6 +79,9 @@ class MainCmd(cmd.Cmd):
     def do_logout(self, rest):
         """Log out and clear current session."""
         self._client.new_session()
+
+    def do_quit(self, rest):
+        sys.exit(0)
 
     def do_more(self, rest):
         """Show more search results."""
