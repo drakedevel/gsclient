@@ -21,6 +21,12 @@ class Song(object):
         self.track = track
         self.title = title
 
+class Playlist(object):
+    def __init__(self, uuid, name, description):
+        self._id = uuid
+        self.name = name
+        self.description = description
+
 class ClientWrapper(object):
     def __init__(self, config = '~/.pygsclient'):
         self._service = gs.Service()
@@ -41,6 +47,15 @@ class ClientWrapper(object):
         self._web.user_id = None
         if 'user_id' in self._shelf:
             del self._shelf['user_id']
+
+    def _munge_playlist(self, p):
+        return Playlist(uuid = p['UUID'],
+                        name = p['Name'],
+                        description = p['About'])
+
+    def get_playlists(self):
+        playlist_data = self._web.get_playlists()
+        return [self._munge_playlist(x) for x in playlist_data['Playlists']]
 
     def get_stream(self, song):
         stream_data = self._player.get_stream(song._id)

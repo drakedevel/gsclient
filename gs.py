@@ -85,8 +85,8 @@ class Client(object):
 
 class WebClient(Client):
     client_name = 'htmlshark'
-    client_rev = '20110906'
-    client_rev_key = 'imOnAHorse'
+    client_rev = '20120312'
+    client_rev_key = 'reallyHotSauce'
 
     def __init__(self, service):
         super(WebClient, self).__init__(service)
@@ -116,10 +116,25 @@ class WebClient(Client):
         else:
             raise Exception("Invalid username or password")
 
-    def get_favorites(self, what):
+    def get_favorites(self, what, user_id = None):
+        if not user_id:
+            if self.user_id:
+                user_id = self.user_id
+            else:
+                raise Exception('Must have user_id')
         req = Request('getFavorites')
-        req['userID'] = self.user_id
+        req['userID'] = user_id
         req['ofWhat'] = what
+        return self._send(req)
+
+    def get_playlists(self, user_id = None):
+        if not user_id:
+            if self.user_id:
+                user_id = self.user_id
+            else:
+                raise Exception('Must have user_id')
+        req = Request('userGetPlaylists')
+        req['userID'] = user_id
         return self._send(req)
 
     def search(self, query, what):
@@ -130,8 +145,8 @@ class WebClient(Client):
         
 class PlayerClient(Client):
     client_name = 'jsqueue'
-    client_rev = '20110906'
-    client_rev_key = 'theTicketsAreNowDiamonds'
+    client_rev = '20120312'
+    client_rev_key = 'paperPlates'
 
     def __init__(self, service):
         super(PlayerClient, self).__init__(service)

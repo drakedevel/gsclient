@@ -94,6 +94,23 @@ class MainCmd(cmd.Cmd):
         else:
             print "No search results."
 
+    def _select_playlist(self, pl):
+        print "I don't know what to do with playlists."
+
+    def _show_playlists(self, pls):
+        i = self._results_idx + 1
+        for pl in pls:
+            print " [%3d] %s" % (i, pl.name)
+            i += 1
+
+    def do_playlists(self, rest):
+        """Show user playlists."""
+        self._more = self._show_playlists
+        self._results = self._client.get_playlists()
+        self._results_idx = 0
+        self._select = self._select_playlist
+        self.do_more(None)
+
     def do_select(self, rest):
         """Select the given index from the last search results."""
         index = int(rest.strip().rstrip())
