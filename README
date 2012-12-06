@@ -1,3 +1,4 @@
 No dependencies but mplayer and a recent Python 2.
+If running on Mac os X, you need mpg123.
 
 Run python ./main.py, and then help for more details.

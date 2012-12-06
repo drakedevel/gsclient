@@ -6,6 +6,7 @@ import readline
 import subprocess
 import sys
 import urllib
+import platform
 
 version = 0.0
 
@@ -25,6 +26,9 @@ class MainCmd(cmd.Cmd):
         self._results = None
         self._results_idx = None
         self._select = None
+        self._os = 'linux'
+        if (platform.system() == "Darwin"):
+            self._os = 'mac'
 
     def do_EOF(self, rest):
         print
@@ -126,7 +130,10 @@ class MainCmd(cmd.Cmd):
         (url, postdata) = self._client.get_stream(song)
         opener = urllib.URLopener()
         stream = opener.open(url, data = postdata)
-        subprocess.call(['mplayer', '-cache', '2048', '-'], stdin = stream)
+        command = ['mplayer', '-cache', '2048', '-']
+        if (self._os == 'mac'):
+            command = ['mpg123', '-']
+        subprocess.call(command, stdin = stream)
 
     def _show_songs(self, songs):
         i = self._results_idx + 1
