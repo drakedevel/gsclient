@@ -5,7 +5,7 @@ import gsclient
 import readline
 import subprocess
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import platform
 
 version = 0.0
@@ -31,18 +31,18 @@ class MainCmd(cmd.Cmd):
             self._os = 'mac'
 
     def do_EOF(self, rest):
-        print
+        print()
         sys.exit(0)
 
     def _select_album(self, album):
-        print "I don't know what to do with albums."
+        print("I don't know what to do with albums.")
 
     def _show_albums(self, albums):
         i = self._results_idx + 1
         artist_max = max([len(a.artist.name) for a in albums])
         format = " [%%3d] %%%ds - %%s" % artist_max
         for a in albums:
-            print format % (i, a.artist.name, a.title)
+            print(format % (i, a.artist.name, a.title))
             i += 1
 
     def do_album(self, rest):
@@ -54,12 +54,12 @@ class MainCmd(cmd.Cmd):
         self.do_more(None)
 
     def _select_artist(self, artist):
-        print "I don't know what to do with artists."
+        print("I don't know what to do with artists.")
 
     def _show_artists(self, artists):
         i = self._results_idx + 1
         for a in artists:
-            print " [%3d] %s" % (i, a.name)
+            print(" [%3d] %s" % (i, a.name))
             i += 1
 
     def do_artist(self, rest):
@@ -78,7 +78,7 @@ class MainCmd(cmd.Cmd):
             password = getpass.getpass()
             self._client.login(user, password)
         else:
-            print "You are already logged in."
+            print("You are already logged in.")
 
     def do_logout(self, rest):
         """Log out and clear current session."""
@@ -94,17 +94,17 @@ class MainCmd(cmd.Cmd):
                 self._more(self._results[self._results_idx:self._results_idx + 30])
                 self._results_idx += 30
             else:
-                print "No more search results."
+                print("No more search results.")
         else:
-            print "No search results."
+            print("No search results.")
 
     def _select_playlist(self, pl):
-        print "I don't know what to do with playlists."
+        print("I don't know what to do with playlists.")
 
     def _show_playlists(self, pls):
         i = self._results_idx + 1
         for pl in pls:
-            print " [%3d] %s" % (i, pl.name)
+            print(" [%3d] %s" % (i, pl.name))
             i += 1
 
     def do_playlists(self, rest):
@@ -122,13 +122,13 @@ class MainCmd(cmd.Cmd):
             if index >= 1 and index <= len(self._results):
                 self._select(self._results[index - 1])
             else:
-                print "Invalid index."
+                print("Invalid index.")
         else:
-            print "No search results."
+            print("No search results.")
 
     def _select_song(self, song):
         (url, postdata) = self._client.get_stream(song)
-        opener = urllib.URLopener()
+        opener = urllib.request.URLopener()
         stream = opener.open(url, data = postdata)
         command = ['mplayer', '-cache', '2048', '-']
         if (self._os == 'mac'):
@@ -141,7 +141,7 @@ class MainCmd(cmd.Cmd):
         album_max = max([len(s.album.title) for s in songs])
         format = " [%%3d] %%%ds - %%%ds - %%s" % (artist_max, album_max)
         for s in songs:
-            print format % (i, s.artist.name, s.album.title, s.title)
+            print(format % (i, s.artist.name, s.album.title, s.title))
             i += 1
 
     def do_song(self, rest):

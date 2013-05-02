@@ -33,7 +33,6 @@ class ClientWrapper(object):
         self._web = gs.WebClient(self._service)
         self._player = gs.PlayerClient(self._service)
         self._shelf = shelve.open(os.path.expanduser(config))
-
         if 'session' in self._shelf:
             self._service.session = self._shelf['session']
             if 'user_id' in self._shelf:

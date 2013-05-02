@@ -1,5 +1,5 @@
 import hashlib
-import httplib
+import http.client
 import json
 import random
 
@@ -31,18 +31,18 @@ class Service(object):
         blob['method'] = req.method
         blob['parameters'] = req
         blob['header'] = header
-
-        conn = httplib.HTTPSConnection(self.endpoint_host)
+        conn = http.client.HTTPSConnection(self.endpoint_host)
         conn.connect()
         conn.request('POST',
                      self.endpoint_path,
                      json.dumps(blob),
                      { 'Content-Type': 'application/json' })
         response = conn.getresponse().read()
+        response = str(response, 'utf-8')
         try:
             data = json.loads(response)
         except:
-            print 'Received garbage: "%s"' % response
+            print('Received garbage: "%s"' % response)
             raise
         conn.close()
 
@@ -75,12 +75,11 @@ class Client(object):
         old = self._last_salt
         while old == self._last_salt:
             self._last_salt = self._random.randint(0, 0xffffff)
-
         sha1 = hashlib.sha1()
-        sha1.update("%s:%s:%s:%06x" % (method,
+        sha1.update(bytes("{}:{}:{}:{:0^6x}".format(method,
                                        self._service.token,
                                        self.client_rev_key,
-                                       self._last_salt))
+                                       self._last_salt),'utf-8'))
         return "%06x%s" % (self._last_salt, sha1.hexdigest())
 
 class WebClient(Client):
@@ -100,7 +99,7 @@ class WebClient(Client):
         req = Request('getCommunicationToken')
 
         md5 = hashlib.md5()
-        md5.update(self._service.session)
+        md5.update(bytes(self._service.session,'utf-8'))
         req['secretKey'] = md5.hexdigest()
 
         self._service.token = self._send(req)
