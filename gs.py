@@ -39,6 +39,7 @@ class Service(object):
                      { 'Content-Type': 'application/json' })
         response = conn.getresponse().read()
         response = str(response, 'utf-8')
+        import pdb;pdb.set_trace()
         try:
             data = json.loads(response)
         except:
@@ -80,6 +81,10 @@ class Client(object):
                                        self._service.token,
                                        self.client_rev_key,
                                        self._last_salt),'utf-8'))
+        #print("{}:{}:{}:{:0^6x}".format(method,
+        #                               self._service.token,
+        #                               self.client_rev_key,
+        #                               self._last_salt))
         return "%06x%s" % (self._last_salt, sha1.hexdigest())
 
 class WebClient(Client):
@@ -134,6 +139,13 @@ class WebClient(Client):
                 raise Exception('Must have user_id')
         req = Request('userGetPlaylists')
         req['userID'] = user_id
+        return self._send(req)
+
+    def get_playlist_songs(self, playlist_id = None):
+        if not playlist_id:
+            raise Exception('Must have playlist_id')
+        req = Request('playlistGetSongs')
+        req['playlistID'] = playlist_id
         return self._send(req)
 
     def search(self, query, what):

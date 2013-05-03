@@ -5,6 +5,7 @@ import gsclient
 import readline
 import subprocess
 import sys
+import os
 import urllib.request, urllib.parse, urllib.error
 import platform
 
@@ -73,8 +74,7 @@ class MainCmd(cmd.Cmd):
     def do_login(self, rest):
         """Log in (prompts for username and password)."""
         if self._client.user_id is None:
-            sys.stdout.write("Username: ")
-            user = sys.stdin.readline().strip().rstrip()
+            user = input("Username: ")
             password = getpass.getpass()
             self._client.login(user, password)
         else:
@@ -99,7 +99,11 @@ class MainCmd(cmd.Cmd):
             print("No search results.")
 
     def _select_playlist(self, pl):
-        print("I don't know what to do with playlists.")
+        self._more = self._show_songs
+        self._results = self._client.get_playlist_songs(pl)
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def _show_playlists(self, pls):
         i = self._results_idx + 1
@@ -120,6 +124,7 @@ class MainCmd(cmd.Cmd):
         index = int(rest.strip().rstrip())
         if self._select:
             if index >= 1 and index <= len(self._results):
+                #import pdb;pdb.set_trace()
                 self._select(self._results[index - 1])
             else:
                 print("Invalid index.")

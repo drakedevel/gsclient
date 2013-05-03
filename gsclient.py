@@ -48,13 +48,17 @@ class ClientWrapper(object):
             del self._shelf['user_id']
 
     def _munge_playlist(self, p):
-        return Playlist(uuid = p['UUID'],
+        return Playlist(uuid = p['PlaylistID'],
                         name = p['Name'],
-                        description = p['About'])
+                        description = p.get('About',''))
 
     def get_playlists(self):
         playlist_data = self._web.get_playlists()
         return [self._munge_playlist(x) for x in playlist_data['Playlists']]
+
+    def get_playlist_songs(self, playlist):
+        raw_result = self._web.get_playlist_songs(playlist._id)
+        return [self._munge_song(s) for s in raw_result['Songs']]
 
     def get_stream(self, song):
         stream_data = self._player.get_stream(song._id)
@@ -96,7 +100,7 @@ class ClientWrapper(object):
                     album = self._munge_album(s),
                     artist = self._munge_artist(s),
                     track = s['TrackNum'],
-                    title = s['SongName'])
+                    title = s.get('SongName',s.get('Name')))
 
     def search_song(self, query):
         raw_result = self._web.search(query, 'Songs')['result']
