@@ -52,6 +52,10 @@ class ClientWrapper(object):
                         name = p['Name'],
                         description = p.get('About',''))
 
+    def get_favorite_songs(self, user_id=None):
+        raw_result = self._web.get_favorites('Songs',user_id=user_id)
+        return [self._munge_song(s) for s in raw_result]
+
     def get_playlists(self):
         playlist_data = self._web.get_playlists()
         return [self._munge_playlist(x) for x in playlist_data['Playlists']]
