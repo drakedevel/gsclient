@@ -5,7 +5,8 @@ import gsclient
 import readline
 import subprocess
 import sys
-import urllib
+import os
+import urllib.request, urllib.parse, urllib.error
 import platform
 
 version = 0.0
@@ -31,18 +32,23 @@ class MainCmd(cmd.Cmd):
             self._os = 'mac'
 
     def do_EOF(self, rest):
-        print
+        print()
         sys.exit(0)
 
     def _select_album(self, album):
-        print "I don't know what to do with albums."
+        self._more = self._show_songs
+        verified = input("Show only verified songs in this album?: ") in ('y','yes')
+        self._results = self._client.get_album_songs(album, verified)
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def _show_albums(self, albums):
         i = self._results_idx + 1
         artist_max = max([len(a.artist.name) for a in albums])
         format = " [%%3d] %%%ds - %%s" % artist_max
         for a in albums:
-            print format % (i, a.artist.name, a.title)
+            print(format % (i, a.artist.name, a.title))
             i += 1
 
     def do_album(self, rest):
@@ -54,12 +60,17 @@ class MainCmd(cmd.Cmd):
         self.do_more(None)
 
     def _select_artist(self, artist):
-        print "I don't know what to do with artists."
+        self._more = self._show_songs
+        verified = input("Show only verified songs in this artist?: ") in ('y','yes')
+        self._results = self._client.get_artist_songs(artist, verified)
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def _show_artists(self, artists):
         i = self._results_idx + 1
         for a in artists:
-            print " [%3d] %s" % (i, a.name)
+            print(" [%3d] %s" % (i, a.name))
             i += 1
 
     def do_artist(self, rest):
@@ -73,12 +84,11 @@ class MainCmd(cmd.Cmd):
     def do_login(self, rest):
         """Log in (prompts for username and password)."""
         if self._client.user_id is None:
-            sys.stdout.write("Username: ")
-            user = sys.stdin.readline().strip().rstrip()
+            user = input("Username: ")
             password = getpass.getpass()
             self._client.login(user, password)
         else:
-            print "You are already logged in."
+            print("You are already logged in.")
 
     def do_logout(self, rest):
         """Log out and clear current session."""
@@ -94,17 +104,21 @@ class MainCmd(cmd.Cmd):
                 self._more(self._results[self._results_idx:self._results_idx + 30])
                 self._results_idx += 30
             else:
-                print "No more search results."
+                print("No more search results.")
         else:
-            print "No search results."
+            print("No search results.")
 
     def _select_playlist(self, pl):
-        print "I don't know what to do with playlists."
+        self._more = self._show_songs
+        self._results = self._client.get_playlist_songs(pl)
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def _show_playlists(self, pls):
         i = self._results_idx + 1
         for pl in pls:
-            print " [%3d] %s" % (i, pl.name)
+            print(" [%3d] %s" % (i, pl.name))
             i += 1
 
     def do_playlists(self, rest):
@@ -120,20 +134,34 @@ class MainCmd(cmd.Cmd):
         index = int(rest.strip().rstrip())
         if self._select:
             if index >= 1 and index <= len(self._results):
+                #import pdb;pdb.set_trace()
                 self._select(self._results[index - 1])
             else:
-                print "Invalid index."
+                print("Invalid index.")
         else:
-            print "No search results."
+            print("No search results.")
 
     def _select_song(self, song):
         (url, postdata) = self._client.get_stream(song)
-        opener = urllib.URLopener()
-        stream = opener.open(url, data = postdata)
-        command = ['mplayer', '-cache', '2048', '-']
-        if (self._os == 'mac'):
-            command = ['mpg123', '-']
-        subprocess.call(command, stdin = stream)
+        opener = urllib.request.URLopener()
+        store_here = input('Save to where?: ')
+        if store_here.strip() != "":
+            ourdir = os.path.dirname(store_here)
+            if not os.path.exists(ourdir):
+                print("Preparing parent folder,",ourdir)
+                os.makedirs(ourdir)
+            elif os.path.exists(store_here):
+                response = input('Overwrite already existing file?: ')
+                if response.lower() not in ('y','yes'):
+                    return
+            opener.retrieve(url, store_here, data = postdata)
+            print("Saved the selected song to ",store_here)
+        else:
+            stream = opener.open(url, data = postdata)
+            command = ['mplayer', '-cache', '2048', '-']
+            if (self._os == 'mac'):
+                command = ['mpg123', '-']
+            subprocess.call(command, stdin = stream)
 
     def _show_songs(self, songs):
         i = self._results_idx + 1
@@ -141,8 +169,16 @@ class MainCmd(cmd.Cmd):
         album_max = max([len(s.album.title) for s in songs])
         format = " [%%3d] %%%ds - %%%ds - %%s" % (artist_max, album_max)
         for s in songs:
-            print format % (i, s.artist.name, s.album.title, s.title)
+            print(format % (i, s.artist.name, s.album.title, s.title))
             i += 1
+
+    def do_favorites(self, rest):
+        """Show user favorites"""
+        self._more = self._show_songs
+        self._results = self._client.get_favorite_songs()
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def do_song(self, rest):
         """Search for songs with the given title."""
