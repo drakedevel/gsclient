@@ -162,6 +162,14 @@ class MainCmd(cmd.Cmd):
             print(format % (i, s.artist.name, s.album.title, s.title))
             i += 1
 
+    def do_favorites(self, rest):
+        """Show user favorites"""
+        self._more = self._show_songs
+        self._results = self._client.get_favorite_songs()
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
+
     def do_song(self, rest):
         """Search for songs with the given title."""
         self._more = self._show_songs
