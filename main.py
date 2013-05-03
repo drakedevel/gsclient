@@ -60,7 +60,12 @@ class MainCmd(cmd.Cmd):
         self.do_more(None)
 
     def _select_artist(self, artist):
-        print("I don't know what to do with artists.")
+        self._more = self._show_songs
+        verified = input("Show only verified songs in this artist?: ") in ('y','yes')
+        self._results = self._client.get_artist_songs(artist, verified)
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def _show_artists(self, artists):
         i = self._results_idx + 1
