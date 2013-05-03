@@ -134,11 +134,24 @@ class MainCmd(cmd.Cmd):
     def _select_song(self, song):
         (url, postdata) = self._client.get_stream(song)
         opener = urllib.request.URLopener()
-        stream = opener.open(url, data = postdata)
-        command = ['mplayer', '-cache', '2048', '-']
-        if (self._os == 'mac'):
-            command = ['mpg123', '-']
-        subprocess.call(command, stdin = stream)
+        store_here = input('Save to where?: ')
+        if store_here.strip() != "":
+            ourdir = os.path.dirname(store_here)
+            if not os.path.exists(ourdir):
+                print("Preparing parent folder,",ourdir)
+                os.makedirs(ourdir)
+            elif os.path.exists(store_here):
+                response = input('Overwrite already existing file?: ')
+                if response.lower() not in ('y','yes'):
+                    return
+            opener.retrieve(url, store_here, data = postdata)
+            print("Saved the selected song to ",store_here)
+        else:
+            stream = opener.open(url, data = postdata)
+            command = ['mplayer', '-cache', '2048', '-']
+            if (self._os == 'mac'):
+                command = ['mpg123', '-']
+            subprocess.call(command, stdin = stream)
 
     def _show_songs(self, songs):
         i = self._results_idx + 1
