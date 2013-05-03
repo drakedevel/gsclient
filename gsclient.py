@@ -68,6 +68,10 @@ class ClientWrapper(object):
         raw_result = self._web.get_album_songs(album._id, verified)
         return [self._munge_song(s) for s in raw_result['songs']]
 
+    def get_artist_songs(self, artist, verified=False):
+        raw_result = self._web.get_artist_songs(artist._id, verified)
+        return [self._munge_song(s) for s in raw_result['songs']]
+
     def get_stream(self, song):
         stream_data = self._player.get_stream(song._id)
         return ("http://%s/stream.php" % stream_data['ip'],
