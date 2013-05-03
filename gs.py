@@ -131,6 +131,15 @@ class WebClient(Client):
         req['ofWhat'] = what
         return self._send(req)
 
+    def get_album_songs(self, album_id = None, verified=False):
+        if not album_id:
+            raise Exception('Must have album_id')
+        req = Request('albumGetSongs')
+        req['albumID'] = album_id
+        req['isVerified'] = verified
+        req['offset'] = 0
+        return self._send(req)
+
     def get_playlists(self, user_id = None):
         if not user_id:
             if self.user_id:

@@ -36,7 +36,12 @@ class MainCmd(cmd.Cmd):
         sys.exit(0)
 
     def _select_album(self, album):
-        print("I don't know what to do with albums.")
+        self._more = self._show_songs
+        verified = input("Show only verified songs in this album?: ") in ('y','yes')
+        self._results = self._client.get_album_songs(album, verified)
+        self._results_idx = 0
+        self._select = self._select_song
+        self.do_more(None)
 
     def _show_albums(self, albums):
         i = self._results_idx + 1
