@@ -2,12 +2,15 @@
 import cmd
 import getpass
 import gsclient
-import readline
 import subprocess
 import sys
-import os
-import urllib.request, urllib.parse, urllib.error
 import platform
+
+# Python 3 compatibility
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 version = 0.0
 
@@ -134,7 +137,6 @@ class MainCmd(cmd.Cmd):
         index = int(rest.strip().rstrip())
         if self._select:
             if index >= 1 and index <= len(self._results):
-                #import pdb;pdb.set_trace()
                 self._select(self._results[index - 1])
             else:
                 print("Invalid index.")
@@ -143,8 +145,7 @@ class MainCmd(cmd.Cmd):
 
     def _select_song(self, song):
         (url, postdata) = self._client.get_stream(song)
-        opener = urllib.request.URLopener()
-        stream = opener.open(url, data = postdata)
+        stream = urlopen(url, data = postdata)
         command = ['mplayer', '-cache', '2048', '-']
         if (self._os == 'mac'):
             command = ['mpg123', '-']

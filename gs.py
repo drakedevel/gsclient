@@ -1,7 +1,12 @@
 import hashlib
-import http.client
 import json
 import random
+
+# Python 3 compatibility
+try:
+    import urllib2
+except ImportError:
+    import urllib.request as urllib2
 
 class Request(dict):
     def __init__(self, method):
@@ -31,21 +36,16 @@ class Service(object):
         blob['method'] = req.method
         blob['parameters'] = req
         blob['header'] = header
-        conn = http.client.HTTPSConnection(self.endpoint_host)
-        conn.connect()
-        conn.request('POST',
-                     self.endpoint_path,
-                     json.dumps(blob),
-                     { 'Content-Type': 'application/json' })
-        response = conn.getresponse().read()
-        response = str(response, 'utf-8')
-        import pdb;pdb.set_trace()
+        request = urllib2.Request('https://%s%s' % (self.endpoint_host, self.endpoint_path),
+                                  data = json.dumps(blob).encode('utf-8'),
+                                  headers = { 'Content-Type': 'application/json' })
+        response = urllib2.urlopen(request).read()
+        response = response.decode('utf-8')
         try:
             data = json.loads(response)
         except:
             print('Received garbage: "%s"' % response)
             raise
-        conn.close()
 
         if 'result' in data:
             return data['result']
@@ -77,10 +77,10 @@ class Client(object):
         while old == self._last_salt:
             self._last_salt = self._random.randint(0, 0xffffff)
         sha1 = hashlib.sha1()
-        sha1.update(bytes("{}:{}:{}:{:0^6x}".format(method,
-                                       self._service.token,
-                                       self.client_rev_key,
-                                       self._last_salt),'utf-8'))
+        sha1.update("{}:{}:{}:{:0^6x}".format(method,
+                                              self._service.token,
+                                              self.client_rev_key,
+                                              self._last_salt).encode('utf-8'))
         #print("{}:{}:{}:{:0^6x}".format(method,
         #                               self._service.token,
         #                               self.client_rev_key,
@@ -104,7 +104,7 @@ class WebClient(Client):
         req = Request('getCommunicationToken')
 
         md5 = hashlib.md5()
-        md5.update(bytes(self._service.session,'utf-8'))
+        md5.update(self._service.session.encode('utf-8'))
         req['secretKey'] = md5.hexdigest()
 
         self._service.token = self._send(req)
