@@ -145,7 +145,7 @@ class MainCmd(cmd.Cmd):
 
     def _select_song(self, song):
         (url, postdata) = self._client.get_stream(song)
-        stream = urlopen(url, data = postdata)
+        stream = urlopen(url, data = postdata.encode('utf-8'))
         command = ['mplayer', '-cache', '2048', '-']
         if (self._os == 'mac'):
             command = ['mpg123', '-']
