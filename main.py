@@ -134,7 +134,11 @@ class MainCmd(cmd.Cmd):
 
     def do_select(self, rest):
         """Select the given index from the last search results."""
-        index = int(rest.strip().rstrip())
+        try:
+            index = int(rest.strip().rstrip())
+        except ValueError:
+            print("Use select <index>")
+            return
         if self._select:
             if index >= 1 and index <= len(self._results):
                 self._select(self._results[index - 1])
