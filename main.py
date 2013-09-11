@@ -11,6 +11,11 @@ try:
     from urllib2 import urlopen
 except ImportError:
     from urllib.request import urlopen
+    
+try:
+    input = raw_input
+except NameError:
+    pass
 
 version = 0.0
 
