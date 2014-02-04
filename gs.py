@@ -89,8 +89,8 @@ class Client(object):
 
 class WebClient(Client):
     client_name = 'htmlshark'
-    client_rev = '20120312'
-    client_rev_key = 'reallyHotSauce'
+    client_rev = '20130520'
+    client_rev_key = 'nuggetsOfBaller'
 
     def __init__(self, service):
         super(WebClient, self).__init__(service)
@@ -174,8 +174,8 @@ class WebClient(Client):
         
 class PlayerClient(Client):
     client_name = 'jsqueue'
-    client_rev = '20120312'
-    client_rev_key = 'paperPlates'
+    client_rev = '20130520'
+    client_rev_key = 'chickenFingers'
 
     def __init__(self, service):
         super(PlayerClient, self).__init__(service)
